@@ -17,8 +17,7 @@ public class TodoController : ControllerBase
 	[HttpPost]
 	public async Task<ActionResult<TodoViewModel>> PostAsync(TodoInputModel createModel, CancellationToken cancellationToken)
 	{
-		var @event = new core.Todos.Events.TodoCreateEvent(Guid.NewGuid(), createModel.Title, createModel.Body, createModel.DueDate);
-		var command = new TodoCreateCommand(@event);
+		var command = new TodoCreateCommand(Guid.NewGuid(), createModel.Title, createModel.Body, createModel.DueDate);
 
 		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
 		return new ObjectResult(new TodoViewModel(result))
@@ -30,8 +29,7 @@ public class TodoController : ControllerBase
 	[HttpPut("{id}")]
 	public async Task<ActionResult<TodoViewModel>> PatchDueDateAsync(Guid id, TodoInputModel updateModel, CancellationToken cancellationToken)
 	{
-		var @event = new core.Todos.Events.TodoUpdateEvent(id, updateModel.Title, updateModel.Body, updateModel.DueDate);
-		var command = new TodoUpdateCommand(@event);
+		var command = new TodoUpdateCommand(id, updateModel.Title, updateModel.Body, updateModel.DueDate);
 
 		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
 		return NoContent(); // We could return the view model instead if we wanted, as result is actually our aggregate
@@ -40,8 +38,7 @@ public class TodoController : ControllerBase
 	[HttpPatch("{id}/DueDate")]
 	public async Task<IActionResult> PatchDueDateAsync(Guid id, TodoDueDateInputModel updateModel, CancellationToken cancellationToken)
 	{
-		var @event = new core.Todos.Events.TodoUpdateDueDateEvent(id, updateModel.DueDate);
-		var command = new TodoUpdateDueDateCommand(@event);
+		var command = new TodoUpdateDueDateCommand(id, updateModel.DueDate);
 
 		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
 		return NoContent(); // We could return the view model instead if we wanted, as result is actually our aggregate
@@ -50,8 +47,7 @@ public class TodoController : ControllerBase
 	[HttpDelete("{id}")]
 	public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken)
 	{
-		var @event = new core.Todos.Events.TodoDeleteEvent(id);
-		var command = new TodoDeleteCommand(@event);
+		var command = new TodoDeleteCommand(id);
 
 		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
 		return NoContent();

@@ -1,7 +1,6 @@
 using System.Diagnostics.Tracing;
-using core.Interfaces.Events;
 using core.Todos.Aggregates;
-using core.Todos.Events;
+using core.Todos.Commands;
 
 namespace infrastructure.Todos.Repositories;
 
@@ -9,7 +8,7 @@ namespace infrastructure.Todos.Repositories;
 // Do note how the class is internal, as no other projects should ever know if even exists as we're using dependency injection to ensure the interface has an implementation.
 internal class TodoEventSourcedRepository : ITodoEventSourcedRepository
 {
-	private static IList<ITodoEvent> _events = new List<ITodoEvent>();
+	private static IList<ITodoCommand> _commands = new List<ITodoCommand>();
 	private static object _lock = new();
 
 	// This method isn't used any where in the template project, however it's included to show how you'd go about read full aggregates from an event sourced repository
@@ -17,23 +16,23 @@ internal class TodoEventSourcedRepository : ITodoEventSourcedRepository
 	{
 		lock (_lock)
 		{
-			var aggregateEvents = _events
-									.Where(@event => @event.AggregateId == id)
+			var aggregateCommands = _commands
+									.Where(command => command.AggregateId == id)
 									.ToList();
-			if (aggregateEvents.Any())
+			if (aggregateCommands.Any())
 			{
-				var todo = new Todo(aggregateEvents);
+				var todo = new Todo(aggregateCommands);
 				return Task.FromResult((Todo?)todo);
 			}
 		}
 		return Task.FromResult((Todo?)null);
 	}
 
-	public Task SaveEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : ITodoEvent
+	public Task SaveCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken) where TCommand : ITodoCommand
 	{
 		lock (_lock)
 		{
-			_events.Add(@event);
+			_commands.Add(command);
 		}
 		return Task.CompletedTask;
 	}

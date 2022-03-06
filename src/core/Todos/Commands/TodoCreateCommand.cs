@@ -1,14 +1,25 @@
 using core.Todos.Aggregates;
-using core.Todos.Events;
 
 namespace core.Todos.Commands;
 
-public class TodoCreateCommand : ICommand<TodoCreateEvent, Todo, Guid>
+public class TodoCreateCommand : ITodoCommand
 {
-	public TodoCreateEvent Event { get; }
+	public Guid AggregateId { get; }
+	public string Title { get; }
+	public string Body { get; }
+	public DateTime DueDate { get; }
 
-	public TodoCreateCommand(TodoCreateEvent @event)
+
+	public TodoCreateCommand(Guid aggregateId, string title, string body, DateTime dueDate)
 	{
-		this.Event = @event;
+		this.AggregateId = aggregateId;
+		this.Title = title;
+		this.Body = body;
+		this.DueDate = dueDate;
+	}
+
+	public void Visit(Todo aggregate)
+	{
+		aggregate.When(this);
 	}
 }

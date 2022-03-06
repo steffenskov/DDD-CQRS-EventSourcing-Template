@@ -1,9 +1,9 @@
 namespace core.Interfaces.Repositories;
 
-public interface IEventSourcedRepository<TAggregate, TId, TBaseEvent>
+public interface IEventSourcedRepository<TAggregate, TId, TBaseCommand>
 where TAggregate : IWithId<TId>
-where TBaseEvent : IVisitorEvent<TAggregate, TId>
+where TBaseCommand : IAggregateVisitor<TAggregate, TId>
 {
 	Task<TAggregate?> GetAsync(TId id, CancellationToken cancellationToken);
-	Task SaveEventAsync<TEvent>(TEvent @event, CancellationToken cancellationToken) where TEvent : TBaseEvent;
+	Task SaveCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken) where TCommand : TBaseCommand;
 }

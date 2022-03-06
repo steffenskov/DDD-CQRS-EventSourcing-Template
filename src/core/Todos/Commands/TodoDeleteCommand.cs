@@ -1,14 +1,18 @@
 using core.Todos.Aggregates;
-using core.Todos.Events;
 
 namespace core.Todos.Commands;
 
-public class TodoDeleteCommand : ICommand<TodoDeleteEvent, Todo, Guid>
+public class TodoDeleteCommand : ITodoCommand
 {
-	public TodoDeleteEvent Event { get; }
+	public Guid AggregateId { get; }
 
-	public TodoDeleteCommand(TodoDeleteEvent @event)
+	public TodoDeleteCommand(Guid aggregateId)
 	{
-		this.Event = @event;
+		this.AggregateId = aggregateId;
+	}
+
+	public void Visit(Todo aggregate)
+	{
+		aggregate.When(this);
 	}
 }

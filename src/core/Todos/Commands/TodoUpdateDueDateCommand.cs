@@ -1,14 +1,20 @@
 using core.Todos.Aggregates;
-using core.Todos.Events;
 
 namespace core.Todos.Commands;
 
-public class TodoUpdateDueDateCommand : ICommand<TodoUpdateDueDateEvent, Todo, Guid>
+public class TodoUpdateDueDateCommand : ITodoCommand
 {
-	public TodoUpdateDueDateEvent Event { get; }
+	public Guid AggregateId { get; }
+	public DateTime DueDate { get; }
 
-	public TodoUpdateDueDateCommand(TodoUpdateDueDateEvent @event)
+	public TodoUpdateDueDateCommand(Guid aggregateId, DateTime dueDate)
 	{
-		this.Event = @event;
+		this.AggregateId = aggregateId;
+		this.DueDate = dueDate;
+	}
+
+	public void Visit(Todo aggregate)
+	{
+		aggregate.When(this);
 	}
 }

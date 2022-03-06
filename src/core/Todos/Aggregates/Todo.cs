@@ -1,8 +1,8 @@
-using core.Todos.Events;
+using core.Todos.Commands;
 
 namespace core.Todos.Aggregates;
 
-// The aggregate class is public, but the empty constructor and all event handling is kept internal to force the developer to go through CQRS.
+// The aggregate class is public, but the empty constructor and all command handling is kept internal to force the developer to go through CQRS.
 public class Todo : IWithId<Guid>
 {
 	public Guid Id { get; private set; }
@@ -15,51 +15,51 @@ public class Todo : IWithId<Guid>
 	{
 	}
 
-	public Todo(IEnumerable<ITodoEvent> events)
+	public Todo(IEnumerable<ITodoCommand> commands)
 	{
-		// By replaying all events in order on the aggregate, we can hydrate it to its present state
-		foreach (var @event in events)
+		// By replaying all commands in order on the aggregate, we can hydrate it to its present state
+		foreach (var command in commands)
 		{
-			@event.Visit(this);
+			command.Visit(this);
 		}
 	}
 
-	internal void When(TodoCreateEvent createEvent)
+	internal void When(TodoCreateCommand command)
 	{
 		// Validate ALL domain rules relevant for this event, prior to setting any properties to avoid an aggregate stuck in limbo.
-		ArgumentNullException.ThrowIfNull(createEvent);
-		ValidateBody(createEvent.Body);
-		ValidateTitle(createEvent.Title);
-		ValidateDueDate(createEvent.DueDate);
+		ArgumentNullException.ThrowIfNull(command);
+		ValidateBody(command.Body);
+		ValidateTitle(command.Title);
+		ValidateDueDate(command.DueDate);
 
 		this.Deleted = false; // A new todo is obviously not deleted
-		this.Id = createEvent.AggregateId;
-		this.Title = createEvent.Title;
-		this.Body = createEvent.Body;
-		this.DueDate = createEvent.DueDate;
+		this.Id = command.AggregateId;
+		this.Title = command.Title;
+		this.Body = command.Body;
+		this.DueDate = command.DueDate;
 	}
 
-	internal void When(TodoUpdateEvent updateEvent)
+	internal void When(TodoUpdateCommand command)
 	{
-		ArgumentNullException.ThrowIfNull(updateEvent);
-		ValidateBody(updateEvent.Body);
-		ValidateTitle(updateEvent.Title);
-		ValidateDueDate(updateEvent.DueDate);
+		ArgumentNullException.ThrowIfNull(command);
+		ValidateBody(command.Body);
+		ValidateTitle(command.Title);
+		ValidateDueDate(command.DueDate);
 
-		this.Title = updateEvent.Title;
-		this.Body = updateEvent.Body;
-		this.DueDate = updateEvent.DueDate;
+		this.Title = command.Title;
+		this.Body = command.Body;
+		this.DueDate = command.DueDate;
 	}
 
-	internal void When(TodoUpdateDueDateEvent updateDueDateEvent)
+	internal void When(TodoUpdateDueDateCommand command)
 	{
-		ArgumentNullException.ThrowIfNull(updateDueDateEvent);
-		ValidateDueDate(updateDueDateEvent.DueDate);
+		ArgumentNullException.ThrowIfNull(command);
+		ValidateDueDate(command.DueDate);
 
-		this.DueDate = updateDueDateEvent.DueDate;
+		this.DueDate = command.DueDate;
 	}
 
-	internal void When(TodoDeleteEvent deleteEvent)
+	internal void When(TodoDeleteCommand command)
 	{
 		// Consider validating whether the todo is in a valid state to be deleted, there could be e.g. related aggregates depending on this
 		this.Deleted = true;

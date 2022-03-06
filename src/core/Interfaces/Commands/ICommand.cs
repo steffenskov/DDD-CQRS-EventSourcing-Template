@@ -1,11 +1,9 @@
 namespace core.Interfaces.Commands;
 
 /// <summary>
-/// Implement this interface if your command doesn't return anything.
+/// Implement this interface for all your commands.
 /// </summary>
-public interface ICommand<TEvent, TAggregate, TId> : IRequest<TAggregate>
+public interface ICommand<TAggregate, TId> : IRequest<TAggregate>, IAggregateVisitor<TAggregate, TId>
 where TAggregate : IWithId<TId>
-where TEvent : IVisitorEvent<TAggregate, TId>
 {
-	public TEvent Event { get; }
 }
