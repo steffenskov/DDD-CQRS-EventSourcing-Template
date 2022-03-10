@@ -38,7 +38,7 @@ Here's where all the magic happens. The project is sorted into 3 main folders:
 - `Todos` holds everything related to our `Todo` **AggregateRoot**
 
 Beneath both `Abstractions` and `Todos` are a bunch of new folders, I'll describe them from the `Todo` perspective, as they're more concrete version of the generic ones beneath `Abstractions`:
-- `Aggregates` holds the AggregateRoot (Todo) as well as any child aggregates (none in this simple template)
+- `Aggregates` holds the AggregateRoot (`Todo`) as well as any child aggregates (none in this simple template)
 - `Commands` holds all Commands that can be sent using the CQRS pattern, these must be handled exactly once by the core domain and are in fact our **eventsource** that is persisted to the eventsourced database.
 - `Notifications` (only exists for `Todo` as it's rather simple) holds broadcast notifications that can be handled any number of times in both the core domain and potentially in supporting domains as well. In this template it's solemnly used for the `TodoPersistNotification` which instructs both the eventsourced- and the snapshot datasource to persist a change.
 - `Queries` holds all the queries that can be sent using the CQRS pattern, these must be handled exactly once by the core domain
