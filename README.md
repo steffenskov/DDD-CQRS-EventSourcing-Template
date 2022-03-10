@@ -3,10 +3,14 @@ Template project for showing how to implement the CQRS pattern with Event Sourci
 
 Furthermore Onion Architecture is applied as well, to enable easy replacement of infrastructure code without changes to the external API or Domain logic.
 
-MediatR is used for the CQRS pattern as well as for persisting domain changes to both an eventsourced datasource as well as a snapshot source. Snapshots are optional when dealing with Event Sourcing, however they greatly speed up read access, so I strongly suggest going with snapshots.
-Without snapshots you're bound to rehydrate aggregates over and over, leading to slower read performance as more domain events occur over the lifetime of your application. This is because hydration is an O(n) operation whereas retrieving a snapshot is *in theory* a O(1) operation. (In practice it's likely to be a O(log(n)) operation, if using a SQL server with optimized indexes for your snapshots)
-
+MediatR is used for the CQRS pattern as well as for persisting domain changes to both an eventsourced datasource as well as a snapshot source.
 If you don't want to use MediatR you can build domain services that mimics the functionality instead.
+
+Snapshots are optional when dealing with Event Sourcing, however they greatly speed up read access, so I strongly suggest going with snapshots.
+Without snapshots you're bound to rehydrate aggregates over and over, leading to slower read performance as more domain events occur over the lifetime of your application. 
+This is because hydration is an O(n) operation whereas retrieving a snapshot is *in theory* a O(1) operation. (In practice it's likely to be a O(log(n)) operation, if using a SQL server with optimized indexes for your snapshots)
+
+
 
 Since we're dealing with the CQRS pattern, we know that all changes to our domain model happens through commands. 
 As such eventsourcing becomes easy and boils down to just persisting all the commands.
