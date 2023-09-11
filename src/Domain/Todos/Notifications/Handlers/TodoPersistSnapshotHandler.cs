@@ -14,6 +14,6 @@ internal class TodoPersistSnapshotHandler
 
 	public async Task Handle(TodoPersistNotification notification, CancellationToken cancellationToken)
 	{
-		await _repository.SaveAggregateAsync(notification.Aggregate, cancellationToken).ConfigureAwait(false);
+		await _repository.PersistAggregateAsync(notification.Aggregate, cancellationToken).ConfigureAwait(false);
 	}
 }

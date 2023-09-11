@@ -1,21 +1,21 @@
 using Domain.Todos.Commands;
 
-namespace Domain.Todos.Aggregates;
+namespace Domain.Todos;
 
 // The aggregate class is public, but all command handling is kept internal to force the developer to go through CQRS.
-public class Todo : IAggregate<Guid>
+public record Todo : IAggregate<TodoId>
 {
-	public static Todo Hydrate(IEnumerable<ITodoCommand> commands)
+	public static async Task<Todo> HydrateAsync(IEnumerable<BaseTodoCommand> commands, CancellationToken cancellationToken)
 	{
 		var aggregate = new Todo();
 		foreach (var command in commands)
 		{
-			command.Visit(aggregate);
+			await command.VisitAsync(aggregate, cancellationToken);
 		}
 		return aggregate;
 	}
 
-	public Guid Id { get; private set; }
+	public TodoId Id { get; private set; } = default!;
 	public string Title { get; private set; } = default!;
 	public string Body { get; private set; } = default!;
 	public DateTime DueDate { get; private set; }
@@ -25,10 +25,10 @@ public class Todo : IAggregate<Guid>
 	{
 	}
 
-	internal void When(TodoCreateCommand command)
+	internal Task WhenAsync(TodoCreateCommand command, CancellationToken cancellationToken)
 	{
 		// Validate ALL domain rules relevant for this event, prior to setting any properties to avoid an aggregate stuck in limbo.
-		ArgumentNullException.ThrowIfNull(command);
+		// Normally some rules require a MediatR query, and as such requires async functionality. This has been omitted in this example for brevity.
 		ValidateBody(command.Body);
 		ValidateTitle(command.Title);
 		ValidateDueDate(command.DueDate);
@@ -38,9 +38,11 @@ public class Todo : IAggregate<Guid>
 		this.Title = command.Title;
 		this.Body = command.Body;
 		this.DueDate = command.DueDate;
+
+		return Task.CompletedTask;
 	}
 
-	internal void When(TodoUpdateCommand command)
+	internal Task WhenAsync(TodoUpdateCommand command, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(command);
 		ValidateBody(command.Body);
@@ -50,20 +52,26 @@ public class Todo : IAggregate<Guid>
 		this.Title = command.Title;
 		this.Body = command.Body;
 		this.DueDate = command.DueDate;
+
+		return Task.CompletedTask;
 	}
 
-	internal void When(TodoUpdateDueDateCommand command)
+	internal Task WhenAsync(TodoUpdateDueDateCommand command, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(command);
 		ValidateDueDate(command.DueDate);
 
 		this.DueDate = command.DueDate;
+
+		return Task.CompletedTask;
 	}
 
-	internal void When(TodoDeleteCommand command)
+	internal Task WhenAsync(TodoDeleteCommand command, CancellationToken cancellationToken)
 	{
 		// Consider validating whether the todo is in a valid state to be deleted, there could be e.g. related aggregates depending on this
 		this.Deleted = true;
+
+		return Task.CompletedTask;
 	}
 
 	// Validation rules are kept separately from setting the actual values to allow us to complete all validation for a given event, prior to setting any properties.

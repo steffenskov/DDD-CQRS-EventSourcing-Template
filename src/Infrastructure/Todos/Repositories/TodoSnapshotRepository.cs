@@ -21,7 +21,7 @@ internal class TodoSnapshotRepository : ITodoSnapshotRepository
 		return Task.FromResult((Todo?)null);
 	}
 
-	public Task SaveAggregateAsync(Todo aggregate, CancellationToken cancellationToken)
+	public Task PersistAggregateAsync(Todo aggregate, CancellationToken cancellationToken)
 	{
 		if (aggregate.Deleted)
 			_data.Remove(aggregate.Id);

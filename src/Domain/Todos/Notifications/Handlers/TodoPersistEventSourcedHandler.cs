@@ -14,6 +14,6 @@ internal class TodoPersistEventSourcedHandler
 
 	public async Task Handle(TodoPersistNotification notification, CancellationToken cancellationToken)
 	{
-		await _repository.SaveCommandAsync(notification.Command, cancellationToken).ConfigureAwait(false);
+		await _repository.PersistCommandAsync(notification.Command, cancellationToken).ConfigureAwait(false);
 	}
 }

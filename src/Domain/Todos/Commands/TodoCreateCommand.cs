@@ -1,11 +1,27 @@
-using Domain.Todos.Aggregates;
-
 namespace Domain.Todos.Commands;
 
-public record TodoCreateCommand(Guid AggregateId, string Title, string Body, DateTime DueDate) : ITodoCommand
+public record TodoCreateCommand(TodoId AggregateId, string Title, string Body, DateTime DueDate) : BaseTodoCommand(AggregateId)
 {
-	public void Visit(Todo aggregate)
+	public override async Task VisitAsync(Todo aggregate, CancellationToken cancellationToken)
 	{
-		aggregate.When(this);
+		await aggregate.WhenAsync(this, cancellationToken);
+	}
+}
+
+sealed file class Handler : IRequestHandler<TodoCreateCommand, Todo>
+{
+	private readonly ITodoSnapshotRepository _repository;
+
+	public Handler(ITodoSnapshotRepository repository)
+	{
+		_repository = repository;
+
+	}
+	public async Task<Todo> Handle(TodoCreateCommand request, CancellationToken cancellationToken)
+	{
+		var aggregate = new Todo();
+		await aggregate.WhenAsync(request, cancellationToken);
+		await _repository.PersistAggregateAsync(aggregate, cancellationToken);
+		return aggregate;
 	}
 }

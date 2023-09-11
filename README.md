@@ -8,7 +8,7 @@ If you don't want to use MediatR you can build domain services that mimics the f
 
 Snapshots are optional when dealing with Event Sourcing, however they greatly speed up read access, so I strongly suggest going with snapshots.
 Without snapshots you're bound to rehydrate aggregates over and over, leading to slower read performance as more domain events occur over the lifetime of your application. 
-This is because hydration is an O(n) operation whereas retrieving a snapshot is *in theory* a O(1) operation. (In practice it's likely to be a O(log(n)) operation, if using a SQL server with optimized indexes for your snapshots)
+This is because hydration is an O(n) operation whereas retrieving a snapshot is *in theory* a O(1) operation. (In practice it's likely to be a O(log(n)) operation, if e.g. using a SQL server with optimized indexes for your snapshots)
 
 
 
