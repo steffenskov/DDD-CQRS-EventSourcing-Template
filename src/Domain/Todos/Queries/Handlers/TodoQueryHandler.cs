@@ -1,4 +1,4 @@
-using Domain.Todos.Aggregates;
+
 using Domain.Todos.Repositories;
 
 namespace Domain.Todos.Queries.Handlers;

@@ -1,10 +1,10 @@
 namespace Domain.Todos.Commands;
 
-public record TodoCreateCommand(TodoId AggregateId, string Title, string Body, DateTime DueDate) : BaseTodoCommand(AggregateId)
+public sealed record TodoCreateCommand(TodoId AggregateId, string Title, string Body, DateTime DueDate) : BaseTodoCommand(AggregateId)
 {
-	public override async Task VisitAsync(Todo aggregate, CancellationToken cancellationToken)
+	public override async Task<Todo> VisitAsync(Todo aggregate, CancellationToken cancellationToken)
 	{
-		await aggregate.WhenAsync(this, cancellationToken);
+		return await aggregate.WithAsync(this, cancellationToken);
 	}
 }
 
@@ -15,13 +15,13 @@ sealed file class Handler : IRequestHandler<TodoCreateCommand, Todo>
 	public Handler(ITodoSnapshotRepository repository)
 	{
 		_repository = repository;
-
 	}
+
 	public async Task<Todo> Handle(TodoCreateCommand request, CancellationToken cancellationToken)
 	{
 		var aggregate = new Todo();
-		await aggregate.WhenAsync(request, cancellationToken);
-		await _repository.PersistAggregateAsync(aggregate, cancellationToken);
-		return aggregate;
+		var aggregateToPersist = await aggregate.WithAsync(request, cancellationToken);
+		await _repository.PersistAggregateAsync(aggregateToPersist, cancellationToken);
+		return aggregateToPersist;
 	}
 }

@@ -5,5 +5,5 @@ where TAggregate : IAggregate<TAggregateId>
 where TAggregateId : StrongTypedGuid<TAggregateId>
 {
 	TAggregateId AggregateId { get; }
-	Task VisitAsync(TAggregate aggregate, CancellationToken cancellationToken);
+	Task<TAggregate> VisitAsync(TAggregate aggregate, CancellationToken cancellationToken);
 }

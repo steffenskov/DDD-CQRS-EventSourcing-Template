@@ -15,63 +15,68 @@ public record Todo : IAggregate<TodoId>
 		return aggregate;
 	}
 
-	public TodoId Id { get; private set; } = default!;
-	public string Title { get; private set; } = default!;
-	public string Body { get; private set; } = default!;
-	public DateTime DueDate { get; private set; }
-	public bool Deleted { get; private set; }
+	public TodoId Id { get; private init; } = default!;
+	public string Title { get; private init; } = default!;
+	public string Body { get; private init; } = default!;
+	public DateTime DueDate { get; private init; }
+	public bool Deleted { get; private init; }
 
 	public Todo()
 	{
 	}
 
-	internal Task WhenAsync(TodoCreateCommand command, CancellationToken cancellationToken)
+	internal Task<Todo> WithAsync(TodoCreateCommand command, CancellationToken cancellationToken)
 	{
 		// Validate ALL domain rules relevant for this event, prior to setting any properties to avoid an aggregate stuck in limbo.
 		// Normally some rules require a MediatR query, and as such requires async functionality. This has been omitted in this example for brevity.
 		ValidateBody(command.Body);
 		ValidateTitle(command.Title);
 		ValidateDueDate(command.DueDate);
-
-		this.Deleted = false; // A new todo is obviously not deleted
-		this.Id = command.AggregateId;
-		this.Title = command.Title;
-		this.Body = command.Body;
-		this.DueDate = command.DueDate;
-
-		return Task.CompletedTask;
+		var result = this with
+		{
+			Deleted = false,  // A new todo is obviously not deleted
+			Id = command.AggregateId,
+			Title = command.Title,
+			Body = command.Body,
+			DueDate = command.DueDate
+		};
+		return Task.FromResult(result);
 	}
 
-	internal Task WhenAsync(TodoUpdateCommand command, CancellationToken cancellationToken)
+	internal Task<Todo> WithAsync(TodoUpdateCommand command, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(command);
 		ValidateBody(command.Body);
 		ValidateTitle(command.Title);
 		ValidateDueDate(command.DueDate);
 
-		this.Title = command.Title;
-		this.Body = command.Body;
-		this.DueDate = command.DueDate;
+		var result = this with
+		{
+			Title = command.Title,
+			Body = command.Body,
+			DueDate = command.DueDate
+		};
 
-		return Task.CompletedTask;
+		return Task.FromResult(result);
 	}
 
-	internal Task WhenAsync(TodoUpdateDueDateCommand command, CancellationToken cancellationToken)
+	internal Task<Todo> WithAsync(TodoUpdateDueDateCommand command, CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(command);
 		ValidateDueDate(command.DueDate);
+		var result = this with { DueDate = command.DueDate };
 
-		this.DueDate = command.DueDate;
-
-		return Task.CompletedTask;
+		return Task.FromResult(result);
 	}
 
-	internal Task WhenAsync(TodoDeleteCommand command, CancellationToken cancellationToken)
+	internal Task<Todo> WithAsync(TodoDeleteCommand command, CancellationToken cancellationToken)
 	{
 		// Consider validating whether the todo is in a valid state to be deleted, there could be e.g. related aggregates depending on this
-		this.Deleted = true;
-
-		return Task.CompletedTask;
+		var result = this with
+		{
+			Deleted = true
+		};
+		return Task.FromResult(result);
 	}
 
 	// Validation rules are kept separately from setting the actual values to allow us to complete all validation for a given event, prior to setting any properties.
