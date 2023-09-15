@@ -1,5 +1,5 @@
 # DDD-CQRS-EventSourcing-Template
-Template project for showing how to implement the CQRS pattern with Event Sourcing in a Domain-Driven Design fashion with .Net 6.
+Template project for showing how to implement the CQRS pattern with Event Sourcing in a Domain-Driven Design fashion with .Net 7.
 
 Furthermore Onion Architecture is applied as well, to enable easy replacement of infrastructure code without changes to the external API or Domain logic.
 
