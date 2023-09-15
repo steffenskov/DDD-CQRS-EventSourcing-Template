@@ -1,5 +1,3 @@
-
-
 namespace Domain.Todos.Commands;
 
 public sealed record TodoDeleteCommand(TodoId AggregateId) : BaseTodoCommand(AggregateId)
@@ -10,9 +8,9 @@ public sealed record TodoDeleteCommand(TodoId AggregateId) : BaseTodoCommand(Agg
 	}
 }
 
-sealed file class Handler : BaseTodoCommandHandler<TodoCreateCommand>
+sealed file class Handler : BaseTodoUpdateCommandHandler<TodoCreateCommand>
 {
-	public Handler(ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(repository, eventSourcedRepository)
+	public Handler(IMediator mediator, ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(mediator, repository, eventSourcedRepository)
 	{
 	}
 }

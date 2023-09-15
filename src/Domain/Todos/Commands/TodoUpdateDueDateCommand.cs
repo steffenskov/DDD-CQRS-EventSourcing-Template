@@ -1,4 +1,3 @@
-
 namespace Domain.Todos.Commands;
 
 public sealed record TodoUpdateDueDateCommand(TodoId AggregateId, DateTime DueDate) : BaseTodoCommand(AggregateId)
@@ -10,9 +9,9 @@ public sealed record TodoUpdateDueDateCommand(TodoId AggregateId, DateTime DueDa
 }
 
 
-sealed file class Handler : BaseTodoCommandHandler<TodoUpdateDueDateCommand>
+sealed file class Handler : BaseTodoUpdateCommandHandler<TodoUpdateDueDateCommand>
 {
-	public Handler(ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(repository, eventSourcedRepository)
+	public Handler(IMediator mediator, ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(mediator, repository, eventSourcedRepository)
 	{
 	}
 }

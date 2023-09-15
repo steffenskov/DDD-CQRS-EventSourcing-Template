@@ -1,5 +1,4 @@
-
-using Domain.Todos.Commands;
+using Domain.Todos.Commands.Abstractions;
 
 namespace Infrastructure.Todos.Repositories;
 

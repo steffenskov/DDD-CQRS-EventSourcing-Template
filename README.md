@@ -41,18 +41,17 @@ Beneath both `Abstractions` and `Todos` are a bunch of new folders, I'll describ
 - `Commands` holds all Commands that can be sent using the CQRS pattern, these must be handled exactly once by the core domain and are in fact our **eventsource** that is persisted to the eventsourced database. Each file contains the command and its handler with `file` visibility, as we'll never need direct access to the handlers (not even for unit and integration testing)
 - `Notifications` doesn't actually exist in this template, but create it if you need to broadcast notifications about your aggregates. An example could be broadcasting whenever something gets persisted, so anyone in need of the updated version knows about it. (e.g. for Cache Invalidation)
 - `Queries` holds all the queries that can be sent using the CQRS pattern, these must be handled exactly once by the core domain. Again each file contains the handler with `file` visibility.
-- `Repositories` are merely slightly more concrete interfaces for the eventsourced- and snapshot datasource.
-
+- `Repositories` are merely slightly more concrete interfaces based on the abstract repository interfaces.
+- `ValueObjects` holds all Value Objects for Todos, in this example only the `TodoId` exists.
 
 ## Infrastructure
 This is where your concrete infrastructure implementations go, in this template it's merely the eventsourced- and snapshot repositories. Dependency Injection is used in `Setup.cs` as a simple way for the API to inject the infrastructure. This is part of the Onion Architecture and allows you to easily swap out this layer.
 
 
 # Understanding the template
-I'd suggest reading the code in a top-down fashion starting with the API and following the code trail down into the domain and finally infrastructure layer. This should give you a good understanding of both what is going on as well as *why*.
+I'd suggest reading the code in a top-down fashion starting with the API and following the code trail down into the domain and finally infrastructure layer. This should give you a good understanding of both what is going on as well as _why_.
 
 
 # What's still missing in the template
-One thing I realized is missing here, is cross AggregateRoot communication. You *may* argue this seldomly occurs, and that one of the two roots should maybe be a child aggregate of the other.
-However I find it occurs often enough to warrant adressing - I'll circle back to that in an update in the future. 
-For now here's the brief explanation: Use CQRS when going across AggregateRoots as well. This way an AggregateRoot doesn't rely on e.g. a repository of the other AggregateRoot, but rather merely a query or command.
+One thing I realized is missing here, is cross sub-domain communication. This is obviously because there's just one sub-domain: `Todos`.
+When doing cross sub-domain communication you should rely on `CQRS`, as well as `Mediator notifications` for any pub-sub type of communication. This way avoids tightly coupling of sub-domains, as all the communication relies on the `Command/Query/Notification` "contracts".

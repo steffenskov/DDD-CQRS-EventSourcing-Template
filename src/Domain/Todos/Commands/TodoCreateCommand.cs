@@ -8,20 +8,14 @@ public sealed record TodoCreateCommand(TodoId AggregateId, string Title, string 
 	}
 }
 
-sealed file class Handler : IRequestHandler<TodoCreateCommand, Todo>
+sealed file class Handler : BaseTodoCommandHandler<TodoCreateCommand>
 {
-	private readonly ITodoSnapshotRepository _repository;
-
-	public Handler(ITodoSnapshotRepository repository)
+	public Handler(IMediator mediator, ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(mediator, repository, eventSourcedRepository)
 	{
-		_repository = repository;
 	}
 
-	public async Task<Todo> Handle(TodoCreateCommand request, CancellationToken cancellationToken)
+	protected override Task<Todo> GetAggregateAsync(TodoCreateCommand request, CancellationToken cancellationToken)
 	{
-		var aggregate = new Todo();
-		var aggregateToPersist = await aggregate.WithAsync(request, cancellationToken);
-		await _repository.PersistAggregateAsync(aggregateToPersist, cancellationToken);
-		return aggregateToPersist;
+		return Task.FromResult(new Todo());
 	}
 }
