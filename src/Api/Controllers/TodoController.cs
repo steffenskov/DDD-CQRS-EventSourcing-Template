@@ -1,4 +1,6 @@
-using Api.Models;
+using System.Net;
+using Api.Todos.Models;
+using Domain;
 using Domain.Todos.Commands;
 using Domain.Todos.Queries;
 
@@ -15,11 +17,12 @@ public class TodoController : ControllerBase
 	}
 
 	[HttpPost]
+	[ProducesResponseType(StatusCodes.Status201Created)]
 	public async Task<ActionResult<TodoViewModel>> PostAsync(TodoInputModel createModel, CancellationToken cancellationToken)
 	{
-		var command = new TodoCreateCommand(Guid.NewGuid(), createModel.Title, createModel.Body, createModel.DueDate);
+		var command = new TodoCreateCommand(TodoId.New(), createModel.Title, createModel.Body, createModel.DueDate);
 
-		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
+		var result = await _mediator.Send(command, cancellationToken);
 
 		return new ObjectResult(new TodoViewModel(result))
 		{
@@ -28,58 +31,61 @@ public class TodoController : ControllerBase
 	}
 
 	[HttpPut("{id}")]
-	public async Task<ActionResult<TodoViewModel>> PatchDueDateAsync(Guid id, TodoInputModel updateModel, CancellationToken cancellationToken)
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<TodoViewModel>> UpdateAsync(TodoId id, TodoInputModel updateModel, CancellationToken cancellationToken)
 	{
 		var command = new TodoUpdateCommand(id, updateModel.Title, updateModel.Body, updateModel.DueDate);
 
-		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
+		var result = await _mediator.Send(command, cancellationToken); // Will throw AggregateNotFoundException if Id does not exist, this should be converted into a 404 by Middleware
 		return NoContent(); // We could return the view model instead if we wanted, as result is actually our aggregate
 	}
 
 	[HttpPatch("{id}/DueDate")]
-	public async Task<IActionResult> PatchDueDateAsync(Guid id, TodoDueDateInputModel updateModel, CancellationToken cancellationToken)
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> PatchDueDateAsync(TodoId id, TodoDueDateInputModel updateModel, CancellationToken cancellationToken)
 	{
 		var command = new TodoUpdateDueDateCommand(id, updateModel.DueDate);
 
-		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
+		var result = await _mediator.Send(command, cancellationToken); // Will throw AggregateNotFoundException if Id does not exist, this should be converted into a 404 by Middleware
 		return NoContent(); // We could return the view model instead if we wanted, as result is actually our aggregate
 	}
 
 	[HttpDelete("{id}")]
-	public async Task<IActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken)
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<IActionResult> DeleteAsync(TodoId id, CancellationToken cancellationToken)
 	{
 		var command = new TodoDeleteCommand(id);
 
-		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
+		var result = await _mediator.Send(command, cancellationToken); // Will throw AggregateNotFoundException if Id does not exist, this should be converted into a 404 by Middleware
 		return NoContent(); // We could return the view model instead if we wanted, as result is actually our aggregate
 	}
 
 	[HttpGet("{id}")]
-	public async Task<ActionResult<TodoViewModel>> GetAsync(Guid id, CancellationToken cancellationToken)
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<TodoViewModel>> GetAsync(TodoId id, CancellationToken cancellationToken)
 	{
 		var command = new TodoGetSingleQuery(id);
 
-		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
-		if (result != null)
-			return new TodoViewModel(result!);
-		else
-			return NotFound();
+		var result = await _mediator.Send(command, cancellationToken);
+		return result is not null
+				? new TodoViewModel(result)
+				: NotFound();
 	}
 
 
 	[HttpGet]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<ICollection<TodoViewModel>>> GetAllAsync(CancellationToken cancellationToken)
 	{
 		var command = new TodoGetAllQuery();
 
-		var result = await _mediator.Send(command, cancellationToken).ConfigureAwait(false);
-		if (result != null)
-		{
-			return result
-						.Select(todo => new TodoViewModel(todo))
-						.ToList();
-		}
-		else
-			return NotFound(); // It's up for discussion whether 404 is really the proper pick for an empty collection, do what makes sense in your project.
+		var result = await _mediator.Send(command, cancellationToken);
+		return result
+					.Select(todo => new TodoViewModel(todo))
+					.ToList();
 	}
 }

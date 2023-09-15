@@ -3,7 +3,7 @@ using Domain.Todos.Commands;
 namespace Domain.Todos;
 
 // The aggregate class is public, but all command handling is kept internal to force the developer to go through CQRS.
-public record Todo : IAggregate<TodoId>
+public sealed record Todo : IAggregate<TodoId>
 {
 	public static async Task<Todo> HydrateAsync(IEnumerable<BaseTodoCommand> commands, CancellationToken cancellationToken)
 	{
@@ -45,7 +45,6 @@ public record Todo : IAggregate<TodoId>
 
 	internal Task<Todo> WithAsync(TodoUpdateCommand command, CancellationToken cancellationToken)
 	{
-		ArgumentNullException.ThrowIfNull(command);
 		ValidateBody(command.Body);
 		ValidateTitle(command.Title);
 		ValidateDueDate(command.DueDate);
@@ -62,7 +61,6 @@ public record Todo : IAggregate<TodoId>
 
 	internal Task<Todo> WithAsync(TodoUpdateDueDateCommand command, CancellationToken cancellationToken)
 	{
-		ArgumentNullException.ThrowIfNull(command);
 		ValidateDueDate(command.DueDate);
 		var result = this with { DueDate = command.DueDate };
 

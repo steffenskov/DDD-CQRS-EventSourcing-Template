@@ -1,7 +1,7 @@
 using Domain;
 using Domain.Todos;
 
-namespace Api.Models;
+namespace Api.Todos.Models;
 
 public class TodoViewModel
 {

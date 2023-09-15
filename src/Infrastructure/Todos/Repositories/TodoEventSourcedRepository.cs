@@ -5,33 +5,42 @@ namespace Infrastructure.Todos.Repositories;
 
 // This is an extremely crude implementation, obviously you'd have something better here.
 // Do note how the class is internal, as no other projects should ever know if even exists as we're using dependency injection to ensure the interface has an implementation.
-internal class TodoEventSourcedRepository : ITodoEventSourcedRepository
+internal sealed class TodoEventSourcedRepository : ITodoEventSourcedRepository
 {
-	private static IList<BaseTodoCommand> _commands = new List<BaseTodoCommand>(); // We use a static list to mimic an actual data store, like e.g. a Cosmos DB
-	private static object _lock = new();
+	private static readonly IList<BaseTodoCommand> _commandStore = new List<BaseTodoCommand>(); // We use a static list to mimic an actual data store, like e.g. a Cosmos DB
+	private static readonly SemaphoreSlim _lock = new(1, 1);
 
 	// This method isn't used any where in the template project, however it's included to show how you'd go about read full aggregates from an event sourced repository
-	public Task<Todo?> GetAsync(Guid id, CancellationToken cancellationToken)
+	public async Task<Todo?> GetAsync(TodoId id, CancellationToken cancellationToken)
 	{
-		lock (_lock)
+		await _lock.WaitAsync(cancellationToken);
+		try
 		{
-			var aggregateCommands = _commands
-									.Where(command => command.AggregateId == id)
-									.ToList();
-			if (aggregateCommands.Any())
+			var commands = _commandStore
+										.Where(c => c.AggregateId == id)
+										.ToList();
+			if (commands.Any())
 			{
-				return Task.FromResult((Todo?)Todo.Hydrate(aggregateCommands));
+				return await Todo.HydrateAsync(commands, cancellationToken);
 			}
 		}
-		return Task.FromResult((Todo?)null);
+		finally
+		{
+			_lock.Release();
+		}
+		return null;
 	}
 
-	public Task PersistCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken) where TCommand : BaseTodoCommand
+	public async Task PersistCommandAsync<TCommand>(TCommand command, CancellationToken cancellationToken) where TCommand : BaseTodoCommand
 	{
-		lock (_lock)
+		await _lock.WaitAsync(cancellationToken);
+		try
 		{
-			_commands.Add(command);
+			_commandStore.Add(command);
 		}
-		return Task.CompletedTask;
+		finally
+		{
+			_lock.Release();
+		}
 	}
 }

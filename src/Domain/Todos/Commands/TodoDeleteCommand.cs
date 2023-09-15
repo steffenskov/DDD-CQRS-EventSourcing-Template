@@ -1,3 +1,5 @@
+
+
 namespace Domain.Todos.Commands;
 
 public sealed record TodoDeleteCommand(TodoId AggregateId) : BaseTodoCommand(AggregateId)
@@ -8,20 +10,9 @@ public sealed record TodoDeleteCommand(TodoId AggregateId) : BaseTodoCommand(Agg
 	}
 }
 
-sealed file class Handler : IRequestHandler<TodoCreateCommand, Todo>
+sealed file class Handler : BaseTodoCommandHandler<TodoCreateCommand>
 {
-	private readonly ITodoSnapshotRepository _repository;
-
-	public Handler(ITodoSnapshotRepository repository)
+	public Handler(ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(repository, eventSourcedRepository)
 	{
-		_repository = repository;
-	}
-
-	public async Task<Todo> Handle(TodoCreateCommand request, CancellationToken cancellationToken)
-	{
-		var aggregate = await _repository.GetAsync(request.AggregateId, cancellationToken) ?? throw new AggregateNotFoundException<Todo, TodoId>(request.AggregateId);
-		var aggregateToPersist = await aggregate.WithAsync(request, cancellationToken);
-		await _repository.PersistAggregateAsync(aggregateToPersist, cancellationToken);
-		return aggregateToPersist;
 	}
 }
