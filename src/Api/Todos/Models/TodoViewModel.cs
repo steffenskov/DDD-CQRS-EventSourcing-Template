@@ -1,10 +1,11 @@
-using Domain.Todos.Aggregates;
+using Domain;
+using Domain.Todos;
 
-namespace Api.Models;
+namespace Api.Todos.Models;
 
 public class TodoViewModel
 {
-	public Guid Id { get; }
+	public TodoId Id { get; }
 	public string Title { get; }
 
 	public string Body { get; }

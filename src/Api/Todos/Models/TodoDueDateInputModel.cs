@@ -1,5 +1,4 @@
-#nullable disable // Disabling nullability check for API models used as arguments as these are always instantiated by the framework
-namespace Api.Models;
+namespace Api.Todos.Models;
 
 public class TodoDueDateInputModel
 {

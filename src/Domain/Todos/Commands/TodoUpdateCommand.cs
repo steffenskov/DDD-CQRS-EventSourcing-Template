@@ -1,11 +1,18 @@
-using Domain.Todos.Aggregates;
+
 
 namespace Domain.Todos.Commands;
 
-public record TodoUpdateCommand(Guid AggregateId, string Title, string Body, DateTime DueDate) : ITodoCommand
+public sealed record TodoUpdateCommand(TodoId AggregateId, string Title, string Body, DateTime DueDate) : BaseTodoCommand(AggregateId)
 {
-	public void Visit(Todo aggregate)
+	public override async Task<Todo> VisitAsync(Todo aggregate, CancellationToken cancellationToken)
 	{
-		aggregate.When(this);
+		return await aggregate.WithAsync(this, cancellationToken);
+	}
+}
+
+sealed file class Handler : BaseTodoCommandHandler<TodoUpdateCommand>
+{
+	public Handler(ITodoSnapshotRepository repository, ITodoEventSourcedRepository eventSourcedRepository) : base(repository, eventSourcedRepository)
+	{
 	}
 }

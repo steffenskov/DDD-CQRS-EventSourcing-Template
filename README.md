@@ -8,7 +8,7 @@ If you don't want to use MediatR you can build domain services that mimics the f
 
 Snapshots are optional when dealing with Event Sourcing, however they greatly speed up read access, so I strongly suggest going with snapshots.
 Without snapshots you're bound to rehydrate aggregates over and over, leading to slower read performance as more domain events occur over the lifetime of your application. 
-This is because hydration is an O(n) operation whereas retrieving a snapshot is *in theory* a O(1) operation. (In practice it's likely to be a O(log(n)) operation, if using a SQL server with optimized indexes for your snapshots)
+This is because hydration is an O(n) operation whereas retrieving a snapshot is *in theory* a O(1) operation. (In practice it's likely to be a O(log(n)) operation, if e.g. using a SQL server with optimized indexes for your snapshots)
 
 
 
@@ -38,10 +38,9 @@ Here's where all the magic happens. The project is sorted into 3 main folders:
 - `Todos` holds everything related to our `Todo` **AggregateRoot**
 
 Beneath both `Abstractions` and `Todos` are a bunch of new folders, I'll describe them from the `Todo` perspective, as they're more concrete version of the generic ones beneath `Abstractions`:
-- `Aggregates` holds the AggregateRoot (`Todo`) as well as any child aggregates (none in this simple template)
-- `Commands` holds all Commands that can be sent using the CQRS pattern, these must be handled exactly once by the core domain and are in fact our **eventsource** that is persisted to the eventsourced database.
-- `Notifications` (only exists for `Todo` as it's rather simple) holds broadcast notifications that can be handled any number of times in both the core domain and potentially in supporting domains as well. In this template it's solemnly used for the `TodoPersistNotification` which instructs both the eventsourced- and the snapshot datasource to persist a change.
-- `Queries` holds all the queries that can be sent using the CQRS pattern, these must be handled exactly once by the core domain
+- `Commands` holds all Commands that can be sent using the CQRS pattern, these must be handled exactly once by the core domain and are in fact our **eventsource** that is persisted to the eventsourced database. Each file contains the command and its handler with `file` visibility, as we'll never need direct access to the handlers (not even for unit and integration testing)
+- `Notifications` doesn't actually exist in this template, but create it if you need to broadcast notifications about your aggregates. An example could be broadcasting whenever something gets persisted, so anyone in need of the updated version knows about it. (e.g. for Cache Invalidation)
+- `Queries` holds all the queries that can be sent using the CQRS pattern, these must be handled exactly once by the core domain. Again each file contains the handler with `file` visibility.
 - `Repositories` are merely slightly more concrete interfaces for the eventsourced- and snapshot datasource.
 
 

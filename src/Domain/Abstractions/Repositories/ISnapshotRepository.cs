@@ -1,9 +1,10 @@
 namespace Domain.Abstractions.Repositories;
 
-public interface ISnapshotRepository<TAggregate, TId>
-where TAggregate : IAggregate<TId>
+public interface ISnapshotRepository<TAggregate, TAggregateId>
+where TAggregate : IAggregate<TAggregateId>
+where TAggregateId : StrongTypedGuid<TAggregateId>
 {
 	Task<IEnumerable<TAggregate>> GetAllAsync(CancellationToken cancellationToken);
-	Task<TAggregate?> GetAsync(TId id, CancellationToken cancellationToken);
-	Task SaveAggregateAsync(TAggregate aggregate, CancellationToken cancellationToken);
+	Task<TAggregate?> GetAsync(TAggregateId id, CancellationToken cancellationToken);
+	Task PersistAggregateAsync(TAggregate aggregate, CancellationToken cancellationToken);
 }

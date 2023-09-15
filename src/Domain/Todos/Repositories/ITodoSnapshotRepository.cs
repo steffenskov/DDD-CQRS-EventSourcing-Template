@@ -1,5 +1,3 @@
-using Domain.Todos.Aggregates;
-
 namespace Domain.Todos.Repositories;
 
 /// <Summary>
@@ -7,6 +5,6 @@ namespace Domain.Todos.Repositories;
 /// Rather you should send commands and queries via MediatR.
 /// The only reason this interface is public, is for DependencyInjection in the infrastructure project (This is how the onion architecture works)
 /// </Summary>
-public interface ITodoSnapshotRepository : ISnapshotRepository<Todo, Guid>
+public interface ITodoSnapshotRepository : ISnapshotRepository<Todo, TodoId>
 {
 }
